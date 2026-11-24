@@ -1,12 +1,15 @@
 import csv
+import io
 import json
 import shutil
+import sqlite3
 import tempfile
 import unittest
+from contextlib import closing
 from datetime import datetime, timezone
 from pathlib import Path
 
-from mktgkit import warehouse
+from mktgkit import cli, scaffold, warehouse
 from mktgkit.errors import MktgError
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -47,6 +50,67 @@ class WarehouseTests(unittest.TestCase):
         expected = warehouse.query(self.root, "SELECT count(*) FROM signups")
         self.assertEqual(expected.rows, [[125]])
         self.assertFalse(list((self.root / "warehouse").glob(".warehouse-*")))
+
+    def test_partial_export_refused_and_check_flags_pending_input(self):
+        client = self.root / "practice"
+        scaffold.init(client, example=True)
+        warehouse.build(client)
+        csv_path = client / "warehouse/seed/signups.csv"
+        lines = csv_path.read_text(encoding="utf-8").splitlines()
+        csv_path.write_text("\n".join(lines[:2]) + "\n", encoding="utf-8")
+
+        out, err = io.StringIO(), io.StringIO()
+        self.assertEqual(cli.main(["warehouse", "build", "-w", str(client)], stdout=out, stderr=err), 1)
+        self.assertIn("declares 125 rows, but the snapshot contains 1", err.getvalue())
+        self.assertEqual(warehouse.query(client, "SELECT COUNT(*) FROM signups").rows, [[125]])
+        self.assertFalse(list((client / "warehouse").glob(".warehouse-*")))
+        for built in (True, False):
+            if not built:
+                warehouse.db_path(client).unlink()
+            out = io.StringIO()
+            self.assertEqual(cli.main(["check", "-w", str(client), "--format", "json"], stdout=out), 1)
+            errors = json.loads(out.getvalue())["errors"]
+            self.assertTrue(any("signups: latest load" in e and "contains 1" in e for e in errors))
+            self.assertEqual(warehouse.db_path(client).exists(), built)
+
+    def test_load_history_uses_latest_timestamp_per_source_independent_of_csv_order(self):
+        log = self.root / "warehouse/seed/load_log.csv"
+        with log.open("a", encoding="utf-8") as f:
+            f.write("signups,2026-11-20T07:00:00+02:00,117,previous export\n")
+        warehouse.build(self.root)
+        self.assertEqual(warehouse.freshness(self.root, ["signups"])[0].loaded_at, "2026-11-20T06:00:00Z")
+        with log.open("a", encoding="utf-8") as f:
+            f.write("signups,2026-11-20T08:00:00Z,0,latest export\n")
+        with self.assertRaisesRegex(MktgError, "declares 0 rows, but the snapshot contains 125"):
+            warehouse.build(self.root)
+        signups = self.root / "warehouse/seed/signups.csv"
+        signups.write_text(signups.read_text(encoding="utf-8").splitlines()[0] + "\n", encoding="utf-8")
+        self.assertEqual(warehouse.build(self.root)["signups"], 0)
+        self.assertFalse(warehouse.freshness(self.root, ["signups"])[0].stale)
+
+    def test_legacy_inconsistent_database_is_refused_on_affected_reads(self):
+        client = self.root / "practice"
+        scaffold.init(client, example=True)
+        warehouse.build(client)
+        with closing(sqlite3.connect(warehouse.db_path(client))) as conn:
+            conn.execute("DELETE FROM signups WHERE signup_id <> (SELECT min(signup_id) FROM signups)")
+            conn.commit()
+        for args in (
+            ["warehouse", "query", "SELECT * FROM attribution_coverage", "--require-fresh"],
+            ["warehouse", "freshness", "signups", "--require-fresh"],
+        ):
+            out, err = io.StringIO(), io.StringIO()
+            self.assertEqual(cli.main([*args, "-w", str(client)], stdout=out, stderr=err), 1)
+            self.assertIn("declares 125 rows, but the snapshot contains 1", err.getvalue())
+            self.assertEqual(out.getvalue(), "")
+        out = io.StringIO()
+        self.assertEqual(cli.main(["check", "-w", str(client), "--format", "json"], stdout=out), 1)
+        self.assertTrue(any("declares 125 rows" in e for e in json.loads(out.getvalue())["errors"]))
+        self.assertEqual(warehouse.query(client, "SELECT COUNT(*) FROM web_sessions").rows, [[1500]])
+        warehouse.build(client)
+        self.assertEqual(
+            warehouse.query(client, "SELECT * FROM attribution_coverage").rows, [[125, 76, 0.608]]
+        )
 
     def test_source_with_invalid_numeric_cell_reports_file_and_row(self):
         target = self.root / "warehouse/seed/ad_spend.csv"

@@ -156,6 +156,49 @@ def _load_csv(connection, root, table):
     return count
 
 
+def _source_load(conn, table, actual_count=None):
+    latest = conn.execute(
+        "SELECT loaded_at, row_count FROM load_log WHERE table_name = ? ORDER BY loaded_at DESC LIMIT 1",
+        (table,),
+    ).fetchone()
+    if latest is None:
+        return None
+    stamp, declared = latest
+    if actual_count is None:
+        actual_count = conn.execute("SELECT count(*) FROM " + table).fetchone()[0]
+    if actual_count != declared:
+        raise MktgError(
+            f"{table}: latest load at {stamp} declares {declared} rows, but the snapshot contains {actual_count}",
+            path="warehouse",
+            fix=f"Reconcile seed/{table}.csv with its source export and seed/load_log.csv, then rebuild.",
+        )
+    return stamp
+
+
+def _import_snapshot(conn, root):
+    try:
+        for script in ("schema.sql", "views.sql"):
+            relative = "warehouse/" + script
+            conn.set_authorizer(_schema_policy)
+            conn.executescript(scoped(root, relative).read_text(encoding="utf-8"))
+            conn.set_authorizer(_trusted_statement)
+        counts = {table: _load_csv(conn, root, table) for table in TABLES}
+        for table in TABLES[:-1]:
+            _source_load(conn, table, counts[table])
+        for view in VIEWS:
+            conn.execute("SELECT * FROM " + view + " LIMIT 0")
+        return counts
+    except (OSError, UnicodeError, csv.Error, sqlite3.Error) as exc:
+        message = getattr(exc, "strerror", None) or str(exc)
+        raise MktgError(message, path="warehouse", fix="Check the schema, views and seed CSV files.") from exc
+
+
+def validate_exports(root):
+    # SQLite manages this temporary database outside the client's workspace.
+    with closing(sqlite3.connect("")) as conn:
+        _import_snapshot(conn, root)
+
+
 def build(root):
     target = db_path(root)
     folder = target.parent
@@ -164,24 +207,15 @@ def build(root):
     fd, tmp = tempfile.mkstemp(prefix=".warehouse-", suffix=".db", dir=folder)
     os.close(fd)
     try:
-        counts = {}
         with closing(sqlite3.connect(tmp)) as conn:
-            for script in ("schema.sql", "views.sql"):
-                relative = "warehouse/" + script
-                conn.set_authorizer(_schema_policy)
-                conn.executescript(scoped(root, relative).read_text(encoding="utf-8"))
-                conn.set_authorizer(_trusted_statement)
-            for table in TABLES:
-                counts[table] = _load_csv(conn, root, table)
+            counts = _import_snapshot(conn, root)
             conn.commit()
-            # Resolve both view definitions before replacing an existing useful database.
-            for view in VIEWS:
-                conn.execute("SELECT * FROM " + view + " LIMIT 0")
         os.replace(tmp, target)
         return counts
-    except (OSError, UnicodeError, csv.Error, sqlite3.Error) as exc:
-        message = getattr(exc, "strerror", None) or str(exc)
-        raise MktgError(message, path="warehouse", fix="Check the schema, views and seed CSV files.") from exc
+    except (OSError, sqlite3.Error) as exc:
+        raise MktgError(
+            str(exc), path="warehouse", fix="Check available disk space and permissions."
+        ) from exc
     finally:
         Path(tmp).unlink(missing_ok=True)
 
@@ -210,12 +244,14 @@ def _ages(conn, root, tables, now):
             "each data table needs a positive max_age_hours", path="warehouse/freshness.json"
         ) from exc
     # The log measures source ingestion, independently of when this database was built.
-    loads = dict(conn.execute("SELECT table_name, MAX(loaded_at) FROM load_log GROUP BY table_name"))
     result = []
     for table in tables:
         if table not in TABLES:
             raise MktgError("unknown source table: " + str(table), fix="Choose one of " + ", ".join(TABLES))
-        stamp = max(loads.values(), default=None) if table == "load_log" else loads.get(table)
+        if table == "load_log":
+            stamp = conn.execute("SELECT MAX(loaded_at) FROM load_log").fetchone()[0]
+        else:
+            stamp = _source_load(conn, table)
         hours = (now - parse_time(stamp)).total_seconds() / 3600 if stamp else None
         limit = limits.get(table)
         stale = hours is None or hours < 0 or (limit is not None and hours > limit)
@@ -226,6 +262,7 @@ def _ages(conn, root, tables, now):
 def freshness(root, tables=None, *, now=None):
     now = now or clock(config(root), None, os.environ)
     with closing(_reader(root)) as conn:
+        conn.execute("BEGIN")
         return _ages(conn, root, TABLES[:-1] if tables is None else tables, now)
 
 
