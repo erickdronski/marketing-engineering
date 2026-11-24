@@ -94,6 +94,26 @@ class WorkspaceTests(unittest.TestCase):
         with workspace.locked(self.root):
             self.assertEqual(path.read_bytes(), previous)
 
+    def test_handoff_names_override_reasons_and_missing_operating_roles(self):
+        from mktgkit import checks
+
+        ledger.append(
+            self.root,
+            {
+                "event": "approved",
+                "item": "Q-0001",
+                "attended": "overridden",
+                "override_reason": "accessible review session",
+            },
+        )
+        (self.root / "agents/orchestrator.md").unlink()
+        with (self.root / "goals.md").open("a", encoding="utf-8") as stream:
+            stream.write("| G1 | Inquiries | Unique accepted IDs | missing_data | one | 2026-12-01 |\n")
+        result = checks.inspect(self.root, workspace.parse_time("2026-11-24"))
+        self.assertTrue(any("accessible review session" in value for value in result["warnings"]))
+        self.assertTrue(any("orchestrator" in value for value in result["errors"]))
+        self.assertTrue(any("missing_data" in value for value in result["errors"]))
+
     def test_malformed_ledger_is_reported(self):
         (self.root / "log/ledger.jsonl").write_text('{"event":"submitted"}\n42\n', encoding="utf-8")
         with self.assertRaisesRegex(MktgError, "line 2"):

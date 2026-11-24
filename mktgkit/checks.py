@@ -30,13 +30,16 @@ def inspect(root, now):
     ):
         if not scoped(root, filename).is_file():
             errors.append(f"{filename}: missing workspace file")
-    if scoped(root, "goals.md").is_file() and scoped(root, "warehouse/schema.sql").is_file():
-        schema = (
-            scoped(root, "warehouse/schema.sql").read_text(encoding="utf-8")
-            + "\n"
-            + scoped(root, "warehouse/views.sql").read_text(encoding="utf-8")
-            if scoped(root, "warehouse/views.sql").is_file()
-            else ""
+    if not scoped(root, "agents/orchestrator.md").is_file():
+        errors.append("agents/orchestrator.md: missing agent definition")
+    if not any(scoped(root, "agents/channels").glob("*.md")):
+        errors.append("agents/channels: define at least one channel owner")
+    if all(
+        scoped(root, name).is_file() for name in ("goals.md", "warehouse/schema.sql", "warehouse/views.sql")
+    ):
+        schema = "\n".join(
+            scoped(root, name).read_text(encoding="utf-8")
+            for name in ("warehouse/schema.sql", "warehouse/views.sql")
         )
         tables = {
             name.lower()
@@ -44,12 +47,13 @@ def inspect(root, now):
         }
         for line in scoped(root, "goals.md").read_text(encoding="utf-8").splitlines():
             cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            if (
-                len(cells) == 6
-                and re.fullmatch(r"G-?\d+", cells[0], re.IGNORECASE)
-                and cells[3].strip("`").lower() not in tables
-            ):
-                errors.append(f"goals.md: {cells[0]} names an unknown table {cells[3]}")
+            if re.fullmatch(r"G-?\d+", cells[0], re.IGNORECASE):
+                if len(cells) != 6 or any(not cell for cell in cells):
+                    errors.append(
+                        f"goals.md: {cells[0]} needs a goal, metric, table, target and decision date"
+                    )
+                elif cells[3].strip("`").lower() not in tables:
+                    errors.append(f"goals.md: {cells[0]} names an unknown table {cells[3]}")
     for path in sorted(scoped(root, "agents").rglob("*.md")):
         if path.name.lower() == "readme.md":
             continue
@@ -73,13 +77,15 @@ def inspect(root, now):
             value = fn()
             if isinstance(value, list):
                 errors.extend(value)
-        except (MktgError, ValueError, OSError) as exc:
+        except MktgError as exc:
+            errors.append(f"{exc.path}: {exc.message}" if exc.path else exc.message)
+        except (ValueError, OSError) as exc:
             errors.append(str(exc))
     try:
         for event in ledger.read(root):
             if event.get("attended") == "overridden":
                 warnings.append(
-                    f"Attendance override on {event.get('event')} for {event.get('item') or event.get('claim') or event.get('action')}"
+                    f"Attendance override on {event.get('event')} for {event.get('item') or event.get('claim') or event.get('action')}: {event.get('override_reason') or 'reason missing'}"
                 )
     except (MktgError, ValueError, OSError) as exc:
         errors.append(str(exc))

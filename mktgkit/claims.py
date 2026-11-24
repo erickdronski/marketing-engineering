@@ -51,10 +51,10 @@ def extract_figures(text):
     return [(raw, key) for key, raw in figures.items()]
 
 
-def string_list(fields, key):
+def string_list(fields, key, *, path=None):
     value = fields.get(key) if fields.get(key) is not None else []
     if not isinstance(value, list) or any(not isinstance(i, str) or not i.strip() for i in value):
-        raise MktgError(key + " must be a list of nonempty strings")
+        raise MktgError(key + " must be a list of nonempty strings", path=path)
     return value
 
 
@@ -70,7 +70,7 @@ def load_claims(root):
         if not isinstance(key, str) or not key or key in claims:
             raise MktgError("missing or duplicate claim id", path=str(rel))
         figs = set()
-        for raw in string_list(fields, "figures"):
+        for raw in string_list(fields, "figures", path=rel.as_posix()):
             matches = extract_figures(raw)
             if len(matches) != 1 or matches[0][0] != raw.strip():
                 raise MktgError("expected a single measurable figure: " + raw, path=str(rel))

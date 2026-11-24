@@ -21,7 +21,7 @@ def parse_date(value):
     return date.fromisoformat(value)
 
 
-def read_export(path, fields):
+def read_export(path, fields, date_column, as_of):
     with path.open(encoding="utf-8-sig", newline="") as stream:
         reader = csv.DictReader(stream, strict=True)
         if sorted(reader.fieldnames or []) != sorted(fields):
@@ -31,10 +31,13 @@ def read_export(path, fields):
                 raise ValueError(f"{path.name} line {reader.line_num}: wrong number of columns")
             row = {key: value.strip() for key, value in row.items()}
             try:
+                row[date_column] = parse_date(row[date_column])
+                if row[date_column] > as_of:
+                    continue
                 for key, value in row.items():
-                    if key.endswith("_date"):
-                        row[key] = parse_date(value)
-                    elif key == "is_test":
+                    if key == date_column:
+                        continue
+                    if key == "is_test":
                         if value.lower() not in {"true", "false"}:
                             raise ValueError("is_test must be true or false")
                         row[key] = value.lower() == "true"
@@ -81,15 +84,13 @@ def reconcile(request_path, booking_path, start, end, as_of, window):
     cohort_matures = end + timedelta(days=window)
     issues = []
     requests, repeated_requests = index_rows(
-        read_export(request_path, REQUEST_FIELDS), REQUEST_FIELDS, "requests", issues
+        read_export(request_path, REQUEST_FIELDS, "request_date", as_of), REQUEST_FIELDS, "requests", issues
     )
     bookings, repeated_bookings = index_rows(
-        read_export(booking_path, BOOKING_FIELDS), BOOKING_FIELDS, "bookings", issues
+        read_export(booking_path, BOOKING_FIELDS, "booked_date", as_of), BOOKING_FIELDS, "bookings", issues
     )
     first_booking = {}
     for booking_id, (request_id, booked) in bookings.items():
-        if booked > as_of:
-            continue
         if not request_id or request_id not in requests:
             problem = "unmatched_request_id" if request_id else "missing_request_id"
             issues.append(("bookings", booking_id, problem, ""))

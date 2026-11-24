@@ -50,6 +50,8 @@ mktgkit queue list -w practice
 mktgkit queue render --out out/queue.html -w practice
 ```
 
+To install a fixed version without cloning, use the [release wheel](https://github.com/erickdronski/marketing-engineering/releases/tag/v0.1.0) in a virtual environment or run `python -m pip install "git+https://github.com/erickdronski/marketing-engineering.git@v0.1.0"`. The full consultant guide and standalone reconciliation recipe live in the repository.
+
 Open `practice/out/queue.html` for a read-only board. Start client engagements with the blank workspace. Keep client exports, drafts and approvals in the client's access-controlled storage. [Workspace guide](docs/workspace.md) · [Engagement brief](docs/consulting/engagement-brief.md) · [Handoff checklist](docs/consulting/handoff.md)
 
 ## How the work moves

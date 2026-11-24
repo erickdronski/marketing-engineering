@@ -24,7 +24,18 @@ class WorkspaceResourcesTest(unittest.TestCase):
                 relative_name = path.relative_to(EXAMPLE)
                 fields, _ = frontmatter.read(path)
                 self.assertEqual(fields["name"], path.stem)
-                self.assertEqual((TEMPLATE / relative_name).read_bytes(), path.read_bytes())
+                starter_fields, starter_body = frontmatter.read(TEMPLATE / relative_name)
+                if fields["name"] == "ads":
+                    self.assertIn("batch brief", starter_fields["switch_on"])
+                    self.assertNotIn("%", starter_fields["switch_on"])
+                    self.assertIn("70%", fields["switch_on"])
+                    self.assertEqual(
+                        {k: v for k, v in starter_fields.items() if k != "switch_on"},
+                        {k: v for k, v in fields.items() if k != "switch_on"},
+                    )
+                    self.assertEqual(starter_body, frontmatter.read(path)[1])
+                else:
+                    self.assertEqual((TEMPLATE / relative_name).read_bytes(), path.read_bytes())
                 wrapper = EXAMPLE / ".claude" / "agents" / path.name
                 metadata, body = frontmatter.read(wrapper)
                 self.assertEqual(fields["name"], metadata["name"])

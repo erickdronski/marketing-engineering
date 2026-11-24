@@ -106,6 +106,16 @@ class LeadHandoffTest(unittest.TestCase):
         self.assertEqual((mature["mature_booked"], mature["mature_eligible"]), (1, 2))
         self.assertEqual(mature["booking_rate"], 0.5)
 
+    def test_later_events_cannot_change_a_closed_as_of_report(self):
+        before = self.run_recipe()
+        expected = {path.name: path.read_bytes() for path in before.iterdir()}
+        with (self.work / "requests.csv").open("a", encoding="utf-8") as out:
+            out.write(",2026-11-20,email,false\nR1,2026-11-20,email,false\n")
+        with (self.work / "bookings.csv").open("a", encoding="utf-8") as out:
+            out.write(",R2,2026-11-20\nB1,R2,2026-11-20\n")
+        after = self.run_recipe(output="reconstructed")
+        self.assertEqual({path.name: path.read_bytes() for path in after.iterdir()}, expected)
+
     def test_empty_denominator_and_header_only_sources(self):
         for path in self.work.glob("*.csv"):
             heading = path.read_text(encoding="utf-8").splitlines()[0]

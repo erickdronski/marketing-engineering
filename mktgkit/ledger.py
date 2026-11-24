@@ -16,6 +16,11 @@ def read(root):
             row = json.loads(line)
             if not isinstance(row, dict) or not isinstance(row.get("event"), str):
                 raise TypeError("event must be a string")
+            for name in ("item", "claim", "action", "channel", "sha256", "review_sha256", "ts"):
+                if name in row and (not isinstance(row[name], str) or not row[name].strip()):
+                    raise TypeError(f"{name} must be nonempty text")
+            if "version" in row and (type(row["version"]) is not int or row["version"] < 1):
+                raise ValueError("version must be a positive integer")
         except (ValueError, TypeError) as exc:
             raise MktgError(f"line {line_no}: {exc}", path="log/ledger.jsonl") from exc
         rows.append(row)

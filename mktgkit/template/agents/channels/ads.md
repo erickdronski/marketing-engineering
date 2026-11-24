@@ -5,7 +5,7 @@ description: "Prepare a paid-channel brief after the reviewer accepts attributio
 status: "parked"
 actions:
   - "change_ad_spend"
-switch_on: "Client approves a budget owner and campaign IDs cover at least 70% of signups in a fresh reporting window."
+switch_on: "Client names a budget owner and agrees a minimum campaign-ID coverage in the batch brief. A fresh signup export meets that threshold."
 ---
 
 # Paid acquisition

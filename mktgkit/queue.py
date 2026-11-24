@@ -60,7 +60,7 @@ def items(root):
             if not isinstance(fields.get(field), str) or not fields[field].strip():
                 raise MktgError("missing " + field, path=rel)
         for field in ("claims", "depends_on"):
-            claims.string_list(fields, field)
+            claims.string_list(fields, field, path=rel)
         found[key] = Item(rel, fields, body)
     return sorted(found.values(), key=lambda i: (PRIORITIES.index(i.fields["priority"]), i.id))
 

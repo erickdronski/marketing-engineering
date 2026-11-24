@@ -71,8 +71,12 @@ def inspect(root, now):
         note_type = fields.get("type")
         if not isinstance(fields.get("title"), str) or not fields["title"].strip():
             issue("give the note a title")
-        if note_type not in TYPES or kind not in ("fact", "inference", "assumption"):
-            issue("set a valid type and kind (fact, inference or assumption)")
+        if not isinstance(note_type, str) or note_type not in TYPES:
+            issue("type must be a supported note type, written as a single word")
+            note_type = None
+        if kind not in ("fact", "inference", "assumption"):
+            issue("kind must be fact, inference or assumption, written as a single word")
+            kind = None
         try:
             as_of = date.fromisoformat(str(fields.get("as_of")))
             if fields.get("review_by") and date.fromisoformat(str(fields["review_by"])) < now.date():
@@ -92,8 +96,13 @@ def inspect(root, now):
                 issue("provide a unique claim id")
             else:
                 claims[claim_id] = name
-            if not isinstance(fields.get("figures"), list) or not fields["figures"]:
-                issue("list the supported figures")
+            figures = fields.get("figures")
+            if (
+                not isinstance(figures, list)
+                or not figures
+                or not all(isinstance(v, str) and v.strip() for v in figures)
+            ):
+                issue("figures must list nonempty text such as 38 minutes")
         found = []
         for link in links(body):
             lookup = link.removeprefix("brain/")

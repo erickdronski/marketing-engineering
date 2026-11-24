@@ -43,11 +43,13 @@ def load(root):
         if not isinstance(tools, dict):
             raise TypeError("tools must be an object")
         for name, mapping in tools.items():
-            if not NAME.fullmatch(name) or (mapping["action"], mapping["channel"]) not in seen:
-                raise ValueError("tool must map to a configured action and channel")
-            if not isinstance(mapping["content_field"], str) or not all(
-                NAME.fullmatch(k) for k in mapping["content_field"].split(".")
+            if not isinstance(mapping, dict) or not all(
+                isinstance(mapping.get(k), str) for k in ("action", "channel", "content_field")
             ):
+                raise ValueError(f"tools.{name} requires text fields action, channel and content_field")
+            if not NAME.fullmatch(name) or (mapping["action"], mapping["channel"]) not in seen:
+                raise ValueError(f"tools.{name} must map to a configured action and channel")
+            if not all(NAME.fullmatch(k) for k in mapping["content_field"].split(".")):
                 raise ValueError("invalid tool content_field")
         return config
     except (OSError, KeyError, TypeError, ValueError) as exc:
