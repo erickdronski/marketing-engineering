@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(mktgkit queue approve *)",
+      "Bash(python3 -m mktgkit queue approve *)",
+      "Bash(python -m mktgkit queue approve *)",
+      "Bash(mktgkit queue send-back *)",
+      "Bash(python3 -m mktgkit queue send-back *)",
+      "Bash(python -m mktgkit queue send-back *)",
+      "Bash(mktgkit claims approve *)",
+      "Bash(python3 -m mktgkit claims approve *)",
+      "Bash(python -m mktgkit claims approve *)",
+      "Bash(mktgkit gate promote *)",
+      "Bash(python3 -m mktgkit gate promote *)",
+      "Bash(python -m mktgkit gate promote *)",
+      "Edit(/log/ledger.jsonl)",
+      "Edit(/permissions.json)",
+      "Edit(/mktgkit.json)",
+      "Edit(/.claude/settings.json)"
+    ]
+  }
+}

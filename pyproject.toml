@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "marketing-engineering"
+version = "0.1.0"
+description = "A local marketing operations workspace and review toolkit for consultants and small teams."
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Erick Dronski"}]
+dependencies = []
+classifiers = [
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Office/Business",
+]
+
+[project.urls]
+Repository = "https://github.com/erickdronski/marketing-engineering"
+
+[project.scripts]
+mktgkit = "mktgkit.cli:main"
+
+[tool.setuptools]
+packages = ["mktgkit", "mktgkit._example"]
+package-dir = {"mktgkit._example" = "examples/wrenfield"}
+include-package-data = false
+
+[tool.setuptools.package-data]
+mktgkit = ["template/*", "template/**/*"]
+"mktgkit._example" = ["*", "**/*", ".gitignore", ".mcp.json", ".claude/settings.json", ".claude/agents/*.md"]
+
+[tool.setuptools.exclude-package-data]
+"*" = ["*.db", "*.db-journal", "*.pyc", ".DS_Store", ".mktgkit-state/*", "out/*"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 110

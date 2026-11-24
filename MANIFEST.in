@@ -1,0 +1,11 @@
+include AGENTS.md CONTRIBUTING.md CHANGELOG.md .gitattributes .gitignore
+recursive-include docs *.md
+recursive-include assets *.svg
+recursive-include recipes *.py *.md *.csv
+recursive-include tools *.py
+recursive-include tests *.py
+recursive-include mktgkit/template *
+recursive-include examples/wrenfield *
+global-exclude .DS_Store *.py[cod] warehouse.db *.db-journal *.db-shm *.db-wal
+prune examples/wrenfield/.mktgkit-state
+prune examples/wrenfield/out

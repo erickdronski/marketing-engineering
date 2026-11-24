@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 322" role="img" aria-labelledby="title desc"><title id="title">The client operating loop</title><desc id="desc">An owner defines a goal, an agent prepares work, a reviewer signs off, and the operator records delivery and measures the result. Evidence informs the next brief.</desc><rect width="720" height="322" rx="15" fill="#101820"/>
+<rect x="19" y="15" width="681" height="54" rx="7" fill="#192B35"/>
+<text x="34" y="47" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#75D3B5">CLIENT OWNER</text>
+<text x="180" y="47" font-family="system-ui,sans-serif" font-size="18" font-weight="650" fill="#F1F5F7">Choose the outcome</text>
+<text x="404" y="47" font-family="system-ui,sans-serif" font-size="14" font-weight="400" fill="#B1C7D3">Define a number and its source.</text>
+<path d="M49 69v11m-3 -4 3 4 3 -4" stroke="#55717F" fill="none" stroke-width="2"/>
+<rect x="19" y="82" width="681" height="54" rx="7" fill="#192B35"/>
+<text x="34" y="114" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#75D3B5">AGENT TEAM</text>
+<text x="180" y="114" font-family="system-ui,sans-serif" font-size="18" font-weight="650" fill="#F1F5F7">Prepare the work</text>
+<text x="404" y="114" font-family="system-ui,sans-serif" font-size="14" font-weight="400" fill="#B1C7D3">Draft a change and cite the evidence.</text>
+<path d="M49 136v11m-3 -4 3 4 3 -4" stroke="#55717F" fill="none" stroke-width="2"/>
+<rect x="19" y="149" width="681" height="54" rx="7" fill="#192B35"/>
+<text x="34" y="181" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#75D3B5">REVIEWER</text>
+<text x="180" y="181" font-family="system-ui,sans-serif" font-size="18" font-weight="650" fill="#F1F5F7">Decide on this version</text>
+<text x="404" y="181" font-family="system-ui,sans-serif" font-size="14" font-weight="400" fill="#B1C7D3">Approve or return a specific edit.</text>
+<path d="M49 203v11m-3 -4 3 4 3 -4" stroke="#55717F" fill="none" stroke-width="2"/>
+<rect x="19" y="216" width="681" height="54" rx="7" fill="#192B35"/>
+<text x="34" y="248" font-family="system-ui,sans-serif" font-size="13" font-weight="700" fill="#75D3B5">OPERATOR</text>
+<text x="180" y="248" font-family="system-ui,sans-serif" font-size="18" font-weight="650" fill="#F1F5F7">Deliver and reconcile</text>
+<text x="404" y="248" font-family="system-ui,sans-serif" font-size="14" font-weight="400" fill="#B1C7D3">Record delivery, exceptions and results.</text>
+<text x="34" y="302" fill="#75D3B5" font-family="system-ui,sans-serif" font-size="16" font-weight="600">The next brief starts with the last result and its source date.</text></svg>

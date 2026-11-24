@@ -1,0 +1,6 @@
+table_name,loaded_at,row_count,source
+web_sessions,2026-11-20T06:00:00Z,1500,synthetic CSV
+posts,2026-11-20T06:00:00Z,1,synthetic CSV
+ad_spend,2026-11-18T06:00:00Z,96,synthetic CSV
+email_events,2026-11-20T06:00:00Z,50,synthetic CSV
+signups,2026-11-20T06:00:00Z,125,synthetic CSV

@@ -1,0 +1,36 @@
+{
+  "default_mode": "draft_only",
+  "rules": [
+    {
+      "action": "publish_post",
+      "channel": "content",
+      "mode": "approve_each"
+    },
+    {
+      "action": "update_page",
+      "channel": "seo-aeo",
+      "mode": "approve_each"
+    },
+    {
+      "action": "send_email",
+      "channel": "partnerships",
+      "mode": "draft_only"
+    },
+    {
+      "action": "change_ad_spend",
+      "channel": "ads",
+      "mode": "draft_only",
+      "spend": true
+    }
+  ],
+  "promotion": {
+    "to_approve_each": {
+      "live_items": 3
+    },
+    "to_auto": {
+      "clean_approvals": 10,
+      "window_days": 30
+    }
+  },
+  "tools": {}
+}

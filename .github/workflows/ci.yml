@@ -1,0 +1,53 @@
+name: Verify client workflows
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python: ['3.10', '3.11', '3.12', '3.13', '3.14']
+        include:
+          - {os: ubuntu-24.04, python: '3.9'}
+          - {os: windows-latest, python: '3.12'}
+          - {os: macos-latest, python: '3.12'}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m unittest discover -s tests -t . -v
+        env:
+          PYTHONUTF8: '1'
+      - run: python -m mktgkit demo
+        env:
+          PYTHONUTF8: '1'
+  distribution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - run: python -m pip install build twine ruff==0.16.3
+      - run: ruff check . && ruff format --check .
+      - run: python -m build && python -m twine check dist/*
+      - name: Verify both installations away from the source checkout
+        shell: bash
+        run: |
+          for pkg in "$PWD"/dist/*; do
+            work="$(mktemp -d)"
+            python -m venv "$work/venv"
+            "$work/venv/bin/python" -m pip install "$pkg"
+            (cd "$work" && venv/bin/mktgkit demo && venv/bin/mktgkit init client && venv/bin/mktgkit check -w client && venv/bin/mktgkit init practice --example && venv/bin/mktgkit warehouse build -w practice && venv/bin/mktgkit check -w practice)
+          done
+      - uses: actions/upload-artifact@v7
+        with:
+          name: distributions
+          path: dist/

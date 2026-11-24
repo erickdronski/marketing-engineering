@@ -1,0 +1,8 @@
+.mktgkit-state/
+warehouse/warehouse.db
+warehouse/*.db-*
+out/
+__pycache__/
+.DS_Store
+.env
+.env.*

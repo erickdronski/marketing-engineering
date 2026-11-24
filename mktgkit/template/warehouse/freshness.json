@@ -1,0 +1,9 @@
+{
+  "max_age_hours": {
+    "web_sessions": 26,
+    "posts": 26,
+    "ad_spend": 26,
+    "email_events": 26,
+    "signups": 26
+  }
+}

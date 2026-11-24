@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "warehouse": {
+      "command": "mktgkit",
+      "args": [
+        "mcp",
+        "--workspace",
+        "${CLAUDE_PROJECT_DIR:-.}"
+      ]
+    }
+  }
+}
