@@ -1,9 +1,11 @@
 import json
 import shutil
+import sqlite3
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import closing
 from io import BytesIO
 from pathlib import Path
 
@@ -90,6 +92,18 @@ class MCPTests(unittest.TestCase):
         self.assertIn(
             "mktgkit warehouse build", self.call("query", sql="SELECT 1")["result"]["content"][0]["text"]
         )
+
+    def test_legacy_count_mismatch_returns_tool_error_without_partial_results(self):
+        with closing(sqlite3.connect(warehouse.db_path(self.root))) as conn:
+            conn.execute("UPDATE load_log SET row_count = 200 WHERE table_name = 'signups'")
+            conn.commit()
+        for result in (
+            self.call("query", sql="SELECT * FROM attribution_coverage")["result"],
+            self.call("freshness", tables=["signups"])["result"],
+        ):
+            self.assertTrue(result["isError"])
+            self.assertIn("declares 200 rows", result["content"][0]["text"])
+            self.assertNotIn("structuredContent", result)
 
     def test_binary_stdio_newlines_invalid_message_and_unicode(self):
         data = req(

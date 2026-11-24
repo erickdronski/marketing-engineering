@@ -19,8 +19,8 @@ The synthetic exports contain **125 signups**. **76** carry a campaign identifie
 1. Initialize a separate workspace for each client. Each file under `warehouse/seed/` starts with the accepted header. Preserve the header and column order, save as UTF-8 CSV, and use an empty field for an unknown value.
 2. Export sessions, signups, published-post statistics, daily campaign spend and email events at the grains below. Preserve stable source IDs across exports. Export only the columns required for analysis. Omit raw names, contact information and message bodies.
 3. Replace each CSV with the complete snapshot you intend to analyze. Use one currency (USD in the supplied views). Align campaign IDs across sources. Leave the campaign field empty for unattributed sessions and signups.
-4. Record each export in `load_log.csv` with its table name, actual source load timestamp in UTC, row count and origin. A rebuild retains the last good database if a file fails validation. Rebuilding alone does not refresh the source timestamps.
-5. Run `mktgkit warehouse build -w CLIENT`. Then run `mktgkit warehouse freshness --require-fresh -w CLIENT`. A missing, future-dated or overdue load returns exit code 5. Edit `warehouse/freshness.json` to match each client's ingestion cadence.
+4. Record each export in `load_log.csv` with its table name, actual source load timestamp in UTC, expected source row count and origin. Take the count from the source system or its export manifest. You can keep previous loads in the log. For each table the toolkit compares the newest timestamp’s count with the complete snapshot, including zero-row exports.
+5. Run `mktgkit warehouse build -w CLIENT`. A count mismatch reports both totals, returns exit code 1 and keeps the previous database. Review the source export and its log, then rebuild. Rebuilding alone preserves the source timestamps. Then run `mktgkit warehouse freshness --require-fresh -w CLIENT`. A missing, future-dated or overdue load returns exit code 5. Edit `warehouse/freshness.json` to match each client's ingestion cadence.
 6. Review coverage and gaps before using a campaign-level rate in a recommendation. The spend view joins totals after aggregating each source by campaign; this prevents one signup or session from multiplying spend. Unrecorded spend and cost with a zero denominator display as an em dash.
 
 | Table | One row represents |
@@ -33,6 +33,8 @@ The synthetic exports contain **125 signups**. **76** carry a campaign identifie
 | load_log | One source ingestion per table and timestamp |
 
 `warehouse query` includes the age of every base table read, including tables behind a view. Add `--require-fresh` when automating a report. Selects return up to 200 rows by default and at most 1,000 per call. Long queries are interrupted after five seconds. The database and CSVs remain on the machine. Store client exports in a workspace with access appropriate for that client.
+
+For a handoff, run `mktgkit check -w CLIENT`. It validates the current CSVs even before the first build, and separately checks the database your reports read. Queries and MCP tools also verify the source tables each report uses. For example, if an older database contains one signup and its latest log declares 125, an attribution query returns a count error without emitting a rate. A matching row count catches many partial exports. It cannot detect the wrong records in a file of the expected size.
 
 ## Connect an agent
 

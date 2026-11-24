@@ -89,6 +89,10 @@ def inspect(root, now):
                 )
     except (MktgError, ValueError, OSError) as exc:
         errors.append(str(exc))
+    try:
+        warehouse.validate_exports(root)
+    except MktgError as exc:
+        errors.append(f"Warehouse exports: {exc}")
     if not scoped(root, "warehouse/warehouse.db").is_file():
         warnings.append("Warehouse not built. Run mktgkit warehouse build before querying.")
     else:
