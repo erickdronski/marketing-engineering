@@ -18,6 +18,8 @@ These are fictional engagement designs. The systems, numbers and acceptance crit
 
 If the form cannot carry an ID into the dispatch system, test whether the dispatcher can record it manually for a pilot. If the CRM only stores the current lead status, begin collecting dated acceptance events. Both are meaningful findings the client can act on before buying a connector.
 
+Once that handoff works, choose a channel where the result can change an operating decision. The [channel experiment field guide](channel-experiments/README.md) pairs six options with a copyable worksheet, a fictional budget decision and an offline data-quality check.
+
 ## Run the engagement
 
 1. **Discovery.** Sit with the person doing the work. Trace a success, a duplicate and an exception using redacted records. Record where each ID is created, which clock records each event, who can correct mistakes, and what decision is currently delayed.

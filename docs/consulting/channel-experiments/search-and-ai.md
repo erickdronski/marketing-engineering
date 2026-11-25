@@ -1,0 +1,24 @@
+# Find the page a buyer needs
+
+“Can a dispatcher move one stop without rebuilding the route?” A fictional software company hears this on sales calls. Improve the page that answers it. Deliver a page-change log showing how buyers found the guide and an answer log showing how assistants described the product.
+
+## Choose a search change
+
+1. **Locate the change in search traffic.** Export Search Console clicks, impressions, click-through rate and average position by page and query for two complete periods of equal length and matching weekdays. Keep search type, country and device filters consistent. For seasonal work, compare the same trading period a year earlier if available. Group URLs by service or directory. Annotate releases, outages, holidays and confirmed search updates. [Google’s traffic-drop guide](https://developers.google.com/search/docs/monitor-debug/debugging-search-traffic-drops)
+2. **Read the page against the query.** Look for high-impression queries where a relevant page appears near the first results yet earns few clicks. Check that the page is indexable and answers the buyer’s need. An agent can group an approved query export by task. A reviewer checks the queries, page and business value. Give the page a distinct title, a descriptive main heading and a demonstrated answer. Add a year when the underlying evidence is genuinely time-specific. [Google’s title-link guidance](https://developers.google.com/search/docs/appearance/title-link)
+3. **Decide what to keep.** Record the URL, buyer task, source of demand, referrals or bookings, owner and proposed action. A quiet installation guide might still serve paying customers. When two pages satisfy distinct needs, keep both. When they serve the same need, combine their useful material at the best destination, update internal links and use a permanent redirect for the retired URL. Verify the redirect reaches the intended page directly. If a page is obsolete and has no suitable replacement, have the owner approve retirement, remove internal links to it and return HTTP 404 or 410. [Google’s redirect guidance](https://developers.google.com/search/docs/crawling-indexing/301-redirects)
+4. **Give the change a fair reading.** Log the old and new title, publication date and review window. Compare the same query group again and inspect a similar unchanged page for wider shifts. Track qualified inquiries separately where the client has a reliable source ID. For distribution, adapt a short example for a partner newsletter or professional network and link to the maintained guide. Tag that referral separately from organic search.
+
+## Check what an assistant actually shows
+
+Choose a small set of customer questions, including a comparison question. Fix the wording and repeat count before editing. Run each prompt in a fresh session before and after the edit with the same product, search setting, language and locale. Record the model version when visible. Log outages and missing responses separately.
+
+| Record for each run | What to inspect |
+|---|---|
+| Prompt ID, date, surface, settings and run number | Preserve the answer or an approved excerpt so a second reviewer can reproduce the scoring. |
+| Brand mentioned, owned URL cited, third-party URLs cited | Open the displayed sources and check which claim each supports. A citation list only shows the sources displayed. |
+| Factual accuracy and next step offered | Check claims against the product and date the evidence. Record a task outcome only when someone actually attempts it. |
+
+For example, six completed answers might include four brand mentions and two links to the company’s guide. Report **4/6 mentions** and **2/6 owned citations** for this prompt panel. Record how many runs failed alongside those denominators. A change in this panel warrants another observation. Each assistant needs its own measurements, even when a page ranks well on Google. [Google’s AI search guidance](https://developers.google.com/search/docs/appearance/ai-features)
+
+If a frequently cited independent guide has an outdated detail, send the editor a dated correction for consideration. If buyers compare two products, publish a side-by-side answer with criteria, sources for both products, limits and a review date. If a login screen interrupts research, test whether a guest preview lets the buyer finish the lookup. For a store that supports guest and account checkouts, run the same cart through each flow in test mode with synthetic details. Count test order confirmations per attempt and record the step where each incomplete run stops. For agent lookups, try a read-only connector for approved facts and record successful lookups per attempt. A recommendation, a completed lookup and a confirmed order are three different outcomes. [Warehouse and read-only tools](../../warehouse.md) · [Delivery adapter contract](../../automation.md)
