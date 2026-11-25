@@ -73,6 +73,7 @@ The orchestrator coordinates content and search work. Research, drafting, visual
 
 ## Use it in consulting work
 
+- **Choose a channel experiment.** Pick a customer decision, copy a pilot worksheet, and see what would justify another test across creator content, Meta ads, LinkedIn, outbound, SEO, or AI search. [Channel experiment field guide](docs/consulting/channel-experiments/README.md)
 - **A first pilot.** Take one form and one CRM export. Reconcile booked, unmatched and duplicate submissions. Deliver the worklist and train its owner to rerun it. [Runnable lead handoff](recipes/lead-handoff/README.md)
 - **A team with multiple channels.** Agree on the denominator for campaign coverage, establish who approves copy and run the review queue for one channel before expanding. [Adoption guide](docs/adopting.md)
 - **Connecting an agent or delivery tool.** The warehouse exposes read-only tools over MCP. Delivery stays with the operator or an adapter your team owns. Test its approval check, duplicate handling and receipt reconciliation before it can make a live change. [Warehouse and MCP](docs/warehouse.md) · [Adapter contract](docs/automation.md)
